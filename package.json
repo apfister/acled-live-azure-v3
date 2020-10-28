@@ -1,0 +1,21 @@
+{
+  "name": "acled-live-azure-v3",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@esri/arcgis-rest-auth": "^2.3.0",
+    "@esri/arcgis-rest-feature-layer": "^2.3.0",
+    "@esri/arcgis-rest-request": "^2.3.0",
+    "isomorphic-fetch": "^2.2.1",
+    "isomorphic-form-data": "^2.0.0",
+    "moment": "^2.18.1",
+    "request": "^2.82.0",
+    "request-promise-native": "^1.0.5",
+    "xlsx": "^0.16.8"
+  },
+  "devDependencies": {}
+}

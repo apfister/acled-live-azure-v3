@@ -152,7 +152,7 @@ const initAuth = async () => {
 
 const getLiveAcledData = async () => {
   const fourteenDaysAgo = moment().subtract(14, 'days').format('YYYY-MM-DD');
-  const apiUrl = `https://api.acleddata.com/acled/read?event_date=${fourteenDaysAgo}&event_date_where=%3E=&limit=0&terms=accept`
+  const apiUrl = `https://api.acleddata.com/acled/read?event_date=${fourteenDaysAgo}&event_date_where=%3E=&limit=0&terms=accept&key=${process.env.ACLED_KEY}&email=${process.env.ACLED_USER}`
 
   // context.log('requesting data from ACLED API ..');
   // context.log(`ACLED API request URL :: ${apiUrl}`);
@@ -174,7 +174,8 @@ const getUSData = async () => {
     const res = await fetch(`http://acleddata.com/download/22846/`);
     const buffer = await res.buffer();
     const workbook = XLSX.read(buffer, {type: "buffer", cellDates: true, dateNF: 'yy-mm-dd'});
-    const worksheet = workbook.Sheets['Sheet 1'];
+    const sheetName = Object.keys(workbook.Sheets)[0]
+    const worksheet = workbook.Sheets[sheetName];
     const json = XLSX.utils.sheet_to_json(worksheet); 
     let features = translateUSAToFeatureJson(json);
 
@@ -240,6 +241,7 @@ module.exports = async function (context, myTimer) {
       const oidChunks = chunk(oids, 500);
       let deletedFeatures = [];
       for (let i=0; i < oidChunks.length; i++) {
+        context.log(`deleting chunk ${i+1} of ${oidChunks.length} ...`);
         deleteResponse = await deleteLiveFeaturesByIds(oidChunks[i], sessionInfo);
         deletedFeatures.push(deleteResponse.deleteResults);
       }
@@ -249,17 +251,17 @@ module.exports = async function (context, myTimer) {
     }
 
     let addResponse = null;
-    let results = [];
+    let results = 0;
     try {
       const chunks = chunk(featuresToAdd, 500);
       for (let i=0; i < chunks.length;i++) {
         addResponse = await insertLiveFeatures(chunks[i], sessionInfo);
-        results.push(addResponse.addResults);
+        results += addResponse.addResults.length;
       }
     } catch (error) {
       context.log(error); 
     }
 
-    context.log(`successfully added ${addResponse.addResults.length} features`);
+    context.log(`successfully added ${results} features`);
     context.log('ACLED Live update completed');
 };
